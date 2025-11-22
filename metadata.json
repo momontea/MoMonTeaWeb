@@ -1,0 +1,7 @@
+{
+  "name": "Momon Tea",
+  "description": "Sitio web moderno para una marca de Bubble Tea inspirado en Starbucks, con un asistente barista impulsado por IA.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

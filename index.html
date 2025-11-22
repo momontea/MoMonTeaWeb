@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Momon Tea - Bubble Tea Premium</title>
+    <!-- Google Fonts: Fredoka One & Barlow -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Fredoka+One&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              momon: {
+                yellow: '#ffe115', // Primary Brand Yellow
+                red: '#ec061e',    // Brand Red
+                green: '#3a935e',  // Brand Green
+                black: '#231f20',  // Brand Black (Dark Grey/Black)
+                offwhite: '#f9f9f9',
+              }
+            },
+            fontFamily: {
+              sans: ['Barlow', 'Helvetica', 'Arial', 'sans-serif'],
+              brand: ['"Fredoka One"', 'cursive'], // Updated to specific Fredoka One font
+            },
+            boxShadow: {
+              'hard': '4px 4px 0px #231f20',
+              'hard-sm': '2px 2px 0px #231f20',
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      /* Custom Utilities for Text Stroke */
+      .text-stroke-white {
+        -webkit-text-stroke: 2px white;
+        color: transparent;
+      }
+      .text-stroke-black {
+        -webkit-text-stroke: 2px #231f20;
+        color: transparent;
+      }
+      .text-stroke-none {
+        -webkit-text-stroke: 0;
+      }
+      
+      /* Floating Animation for Dynamic Feel */
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+      }
+      .animate-float {
+        animation: float 4s ease-in-out infinite;
+      }
+      .animate-float-delayed {
+        animation: float 4s ease-in-out 2s infinite;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
