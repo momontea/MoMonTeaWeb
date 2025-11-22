@@ -17,6 +17,9 @@ import { Footer } from './components/Footer';
 import { AiBarista } from './components/AiBarista';
 import { Logo } from './components/Logo';
 import { MagicCursor } from './components/MagicCursor';
+import { Confetti } from './components/Confetti'; // New
+import { MoodQuiz } from './components/MoodQuiz'; // New
+import { SocialReviews } from './components/SocialReviews'; // New
 import { Product, OrderOptions, CartItem } from './types';
 import { Zap, Users, Sparkles, Heart } from 'lucide-react';
 
@@ -28,8 +31,28 @@ const App: React.FC = () => {
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  
+  // Gamification States
+  const [sparks, setSparks] = useState(100); // Initial Sparks
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  // STOCK LOGIC
+  const PROMO_ID = 'promo-pack-x5';
+  const MAX_PROMO_STOCK = 2;
+
+  // Calculate how many promos are currently in cart
+  const promoInCart = cart.find(item => item.product.id === PROMO_ID);
+  const currentPromoQty = promoInCart ? promoInCart.quantity : 0;
+  const remainingStock = Math.max(0, MAX_PROMO_STOCK - currentPromoQty);
 
   const cartTotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+
+  // Helper to trigger confetti
+  const triggerCelebration = (points: number = 0) => {
+    setShowConfetti(true);
+    if(points > 0) setSparks(prev => prev + points);
+    setTimeout(() => setShowConfetti(false), 3000);
+  };
 
   // Compare two options objects to see if they are identical
   const areOptionsEqual = (opt1: OrderOptions, opt2: OrderOptions) => {
@@ -49,6 +72,16 @@ const App: React.FC = () => {
     const existingItemIndex = cart.findIndex(item => 
       item.product.id === product.id && areOptionsEqual(item.options, options)
     );
+
+    // SPECIAL CHECK FOR PROMO PACK LIMIT
+    if (product.id === PROMO_ID) {
+      const currentQty = existingItemIndex >= 0 ? cart[existingItemIndex].quantity : 0;
+      if (currentQty >= MAX_PROMO_STOCK) {
+        // Optional: Show a toast or alert here
+        alert("¡Solo puedes llevar máximo 2 packs por persona!");
+        return;
+      }
+    }
 
     if (existingItemIndex >= 0) {
       // Increment quantity
@@ -72,11 +105,18 @@ const App: React.FC = () => {
     
     setSelectedProduct(null);
     setIsCartOpen(true);
+    triggerCelebration(50); // Give 50 sparks for adding to cart
   };
 
   const handleUpdateQuantity = (itemId: string, delta: number) => {
     setCart(cart.map(item => {
       if (item.id === itemId) {
+        
+        // Check Limit for Promo Pack when increasing
+        if (item.product.id === PROMO_ID && delta > 0) {
+           if (item.quantity >= MAX_PROMO_STOCK) return item; // Block increase
+        }
+
         const newQuantity = Math.max(1, item.quantity + delta);
         return {
           ...item,
@@ -97,6 +137,31 @@ const App: React.FC = () => {
     if (element) element.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Special handler for the Hero Section Pack Promo
+  const handleAddPackToCart = () => {
+    if (remainingStock === 0) return;
+
+    const promoProduct: Product = {
+      id: PROMO_ID,
+      name: 'Pack Promo (x5)',
+      family: 'Bubble Love', // Fallback family
+      basePrice: 10.00,
+      description: 'Pack de 5 cupones de 50% de descuento. Válido hoy.',
+      imageUrl: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=800'
+    };
+
+    const promoOptions: OrderOptions = {
+      base: 'Promo',
+      size: 'Emoción',
+      temperature: 'Con hielo',
+      sweetness: 'Normal',
+      straw: true,
+      extras: []
+    };
+
+    handleAddToCart(promoProduct, promoOptions, 10.00);
+  };
+
   const handleCheckout = () => {
     setIsCartOpen(false);
     setIsPaymentModalOpen(true);
@@ -104,7 +169,12 @@ const App: React.FC = () => {
 
   const handlePaymentSuccess = () => {
     setCart([]); // Clear cart
-    // Celebration logic is handled inside PaymentModal, we just reset state
+    triggerCelebration(500); // Big celebration
+  };
+
+  const handleJoinTribe = () => {
+     setIsJoinModalOpen(false);
+     triggerCelebration(200);
   };
 
   return (
@@ -114,6 +184,9 @@ const App: React.FC = () => {
         <WelcomeScreen onUnlock={() => setShowWelcome(false)} />
       )}
 
+      {/* Confetti Overlay */}
+      {showConfetti && <Confetti />}
+
       <div className={`min-h-screen bg-white font-sans text-momon-black antialiased overflow-hidden transition-opacity duration-1000 ${showWelcome ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'}`}>
         
         <MagicCursor />
@@ -122,17 +195,24 @@ const App: React.FC = () => {
           onOpenCart={() => setIsCartOpen(true)} 
           onJoinTribe={() => setIsJoinModalOpen(true)}
           cartItemCount={cart.reduce((acc, item) => acc + item.quantity, 0)} 
+          sparks={sparks}
         />
         
         <main className="flex flex-col">
           
-          {/* HERO SECTION: Martes de Ritual */}
+          {/* HERO SECTION: Martes de Ritual - Now adds Pack to Cart */}
           <div id="promos">
-            <HeroSection onCtaClick={handleScrollToMenu} />
+            <HeroSection 
+              onCtaClick={handleAddPackToCart} 
+              stock={remainingStock} 
+            />
           </div>
 
           {/* Order Section (Full Menu) */}
           <OrderSection onProductSelect={setSelectedProduct} />
+          
+          {/* DOPAMINE SCROLL: Mood Quiz */}
+          <MoodQuiz onRecommendation={(prod) => { setSelectedProduct(prod); triggerCelebration(10); }} />
 
           {/* FEATURE SECTION: Mango Ojo Loco */}
           <FeatureSection onCtaClick={handleScrollToMenu} />
@@ -143,6 +223,9 @@ const App: React.FC = () => {
           {/* TRIBE SECTION: Replaces generic PromoBlock */}
           <TribeSection onJoinClick={() => setIsJoinModalOpen(true)} />
           
+          {/* SOCIAL PROOF */}
+          <SocialReviews />
+
           {/* Brand Manifesto Section */}
           <section id="nosotros" className="py-16 md:py-24 bg-momon-black relative overflow-hidden px-4">
             
@@ -172,8 +255,8 @@ const App: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 items-center max-w-6xl mx-auto">
                 
-                <div className="bg-momon-red p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border-4 border-momon-black shadow-[6px_6px_0px_#fff] md:shadow-[8px_8px_0px_#fff] transform -rotate-1 md:-rotate-2 hover:rotate-0 hover:-translate-y-2 transition-all duration-300 h-full flex flex-col items-center text-center">
-                  <div className="bg-white w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center border-4 border-momon-black mb-4 md:mb-6 shadow-hard-sm">
+                <div className="bg-momon-red p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border-4 border-momon-black shadow-[6px_6px_0px_#fff] md:shadow-[8px_8px_0px_#fff] transform -rotate-1 md:-rotate-2 hover:rotate-0 hover:-translate-y-2 transition-all duration-300 h-full flex flex-col items-center text-center group cursor-pointer" onClick={() => triggerCelebration(5)}>
+                  <div className="bg-white w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center border-4 border-momon-black mb-4 md:mb-6 shadow-hard-sm group-hover:scale-110 transition-transform">
                      <Zap size={32} md:size={40} className="text-momon-red fill-current" />
                   </div>
                   <h3 className="font-brand text-3xl md:text-4xl text-white mb-3 md:mb-4 drop-shadow-md">La Chispa</h3>
@@ -194,8 +277,8 @@ const App: React.FC = () => {
                     </button>
                 </div>
 
-                <div className="bg-momon-green p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border-4 border-momon-black shadow-[6px_6px_0px_#fff] md:shadow-[8px_8px_0px_#fff] transform rotate-1 md:rotate-2 hover:rotate-0 hover:-translate-y-2 transition-all duration-300 h-full flex flex-col items-center text-center">
-                  <div className="bg-white w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center border-4 border-momon-black mb-4 md:mb-6 shadow-hard-sm">
+                <div className="bg-momon-green p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border-4 border-momon-black shadow-[6px_6px_0px_#fff] md:shadow-[8px_8px_0px_#fff] transform rotate-1 md:rotate-2 hover:rotate-0 hover:-translate-y-2 transition-all duration-300 h-full flex flex-col items-center text-center group cursor-pointer" onClick={() => triggerCelebration(5)}>
+                  <div className="bg-white w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center border-4 border-momon-black mb-4 md:mb-6 shadow-hard-sm group-hover:scale-110 transition-transform">
                      <Users size={32} md:size={40} className="text-momon-green fill-current" />
                   </div>
                   <h3 className="font-brand text-3xl md:text-4xl text-white mb-3 md:mb-4 drop-shadow-md">La Tribu</h3>

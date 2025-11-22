@@ -1,7 +1,18 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
-// Initialize the client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Lazy initialization to prevent crash during module load if process is undefined
+let ai: GoogleGenAI | null = null;
+
+const getAiClient = () => {
+  if (!ai) {
+    // Safe access to environment variable
+    const apiKey = (typeof process !== 'undefined' && process.env && process.env.API_KEY) 
+      ? process.env.API_KEY 
+      : '';
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
+};
 
 const SYSTEM_INSTRUCTION = `
 Eres Momon, el catalizador de sueños y barista virtual de "Momon Tea". 
@@ -31,7 +42,8 @@ export const sendMessageToGemini = async (
   history: { role: 'user' | 'model'; text: string }[]
 ): Promise<string> => {
   try {
-    const chat = ai.chats.create({
+    const client = getAiClient();
+    const chat = client.chats.create({
       model: 'gemini-2.5-flash',
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,

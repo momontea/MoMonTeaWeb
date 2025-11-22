@@ -1,145 +1,126 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Logo } from './Logo';
-import { Sparkles, Zap } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 interface WelcomeScreenProps {
   onUnlock: () => void;
 }
 
-const UNIVERSE_MESSAGES = [
-  "¡Hoy romperás las reglas! ⚡",
-  "Tu creatividad está on fire 🔥",
-  "El universo te sonríe hoy ✨",
-  "Sigue a tu conejo blanco 🐰",
-  "Crea, sueña, vive 🌈",
-  "Dopamina activada 🍬",
-  "Hoy es un buen día para soñar ☁️"
-];
-
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onUnlock }) => {
   const [isPopping, setIsPopping] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
-  const [message, setMessage] = useState("");
-  const [particles, setParticles] = useState<{id: number, x: number, y: number, color: string, rotation: number}[]>([]);
-
-  // Generate particles on mount but show them on click
-  const generateParticles = () => {
-    const colors = ['#ec061e', '#ffe115', '#3a935e', '#231f20', '#ffffff'];
-    const newParticles = [];
-    for (let i = 0; i < 50; i++) {
-      newParticles.push({
-        id: i,
-        x: (Math.random() - 0.5) * 800, // Spread X
-        y: (Math.random() - 0.5) * 800, // Spread Y
-        color: colors[Math.floor(Math.random() * colors.length)],
-        rotation: Math.random() * 360
-      });
-    }
-    setParticles(newParticles);
-  };
-
-  useEffect(() => {
-    generateParticles();
-  }, []);
 
   const handleInteraction = () => {
     if (isPopping) return;
     
-    const randomMsg = UNIVERSE_MESSAGES[Math.floor(Math.random() * UNIVERSE_MESSAGES.length)];
-    setMessage(randomMsg);
     setIsPopping(true);
     
     // Trigger exit after animation
     setTimeout(() => {
       setIsExiting(true);
       setTimeout(onUnlock, 800); // Wait for exit animation
-    }, 1500);
+    }, 800); // Increased slightly to let user see the smile
   };
 
   return (
-    <div className={`fixed inset-0 z-[200] bg-momon-yellow flex flex-col items-center justify-center overflow-hidden transition-all duration-500 ease-in-out ${isExiting ? 'opacity-0 scale-150 pointer-events-none' : 'opacity-100 scale-100'}`}>
+    <div 
+      className={`fixed inset-0 z-[200] bg-momon-yellow flex flex-col items-center justify-center overflow-hidden transition-all duration-700 ease-in-out ${isExiting ? 'opacity-0 scale-150 pointer-events-none' : 'opacity-100 scale-100'}`}
+      style={{ backgroundColor: '#ffe115' }}
+    >
       
-      {/* High Energy Background Pattern */}
+      {/* Background Pattern */}
       <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] animate-pulse"></div>
       
-      {/* Radiating Rings Background (Concentrating energy) */}
-      <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${isPopping ? 'opacity-0' : 'opacity-100'}`}>
-         <div className="w-[500px] h-[500px] border-4 border-momon-black/10 rounded-full animate-ping absolute"></div>
-         <div className="w-[300px] h-[300px] border-4 border-momon-black/20 rounded-full animate-ping delay-75 absolute"></div>
+      {/* Floating Background Particles */}
+      <div className={`absolute top-1/4 left-1/4 text-momon-black animate-bounce delay-700 transition-opacity duration-300 ${isPopping ? 'opacity-0' : 'opacity-100'}`}>
+         <Sparkles size={40} />
+      </div>
+      <div className={`absolute bottom-1/4 right-1/4 text-momon-red animate-bounce delay-100 transition-opacity duration-300 ${isPopping ? 'opacity-0' : 'opacity-100'}`}>
+         <Sparkles size={30} />
       </div>
 
-      {/* Burst Background (On Click) */}
-      <div className={`absolute inset-0 bg-momon-red transition-transform duration-300 origin-center ${isPopping ? 'scale-[5]' : 'scale-0'} rounded-full`}></div>
-
-      <div className="relative z-10 flex flex-col items-center w-full px-4">
+      <div className="relative z-10 flex flex-col items-center w-full px-4 text-center">
         
-        {/* Floating Elements - Increased Chaos */}
-        <div className={`absolute top-[-150px] left-10 text-momon-black transform -rotate-12 transition-all duration-500 ${isPopping ? 'translate-y-[800px] rotate-[180deg] scale-150 opacity-0' : 'animate-bounce'}`}>
-          <Sparkles size={100} strokeWidth={1} />
-        </div>
-        <div className={`absolute bottom-[-150px] right-10 text-momon-red transform rotate-12 transition-all duration-500 ${isPopping ? '-translate-y-[800px] rotate-[-180deg] scale-150 opacity-0' : 'animate-bounce delay-100'}`}>
-          <Zap size={80} strokeWidth={3} fill="currentColor" />
-        </div>
-
         {/* Header Text */}
-        <h1 className={`font-brand text-5xl md:text-7xl text-momon-black mb-12 text-center transition-all duration-300 drop-shadow-[4px_4px_0px_#fff] text-stroke-white ${isPopping ? 'scale-150 opacity-0' : 'animate-bounce'}`}>
+        <h1 className={`font-brand text-4xl sm:text-5xl md:text-7xl text-momon-black mb-8 md:mb-12 transition-all duration-500 drop-shadow-[4px_4px_0px_#fff] text-stroke-white ${isPopping ? 'scale-110 opacity-0 translate-y-[-50px]' : 'animate-float'}`}>
           ¿LISTO PARA <br/>
-          <span className="text-momon-red text-stroke-black">SOÑAR?</span>
+          <span className="text-momon-red text-stroke-black">AVENTURAR?</span>
         </h1>
 
-        {/* The Interaction Trigger */}
-        <div className="relative group cursor-pointer perspective-1000" onClick={handleInteraction}>
-          
-          {/* Particles Explosion */}
-          {isPopping && particles.map((p) => (
-            <div 
-              key={p.id}
-              className="absolute top-1/2 left-1/2 w-4 h-4 rounded-sm md:w-6 md:h-6"
-              style={{
-                backgroundColor: p.color,
-                transform: `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) rotate(${p.rotation}deg)`,
-                transition: 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s ease-out',
-                opacity: 0
-              }}
-            ></div>
-          ))}
-
-          {/* Main Object - Shake on Hover */}
-          <div className={`relative transition-all duration-100 transform ${isPopping ? 'scale-0 rotate-[720deg]' : 'group-hover:scale-110 group-hover:rotate-3 group-active:scale-95'}`}>
+        {/* THE BUBBLE TRAP */}
+        <div 
+          className="relative group cursor-pointer my-4 perspective-1000" 
+          onClick={handleInteraction}
+        >
+          {/* 
+             AESTHETIC BUBBLE DESIGN 
+          */}
+          <div className={`relative w-64 h-64 md:w-80 md:h-80 rounded-full border-2 border-white/60 bg-gradient-to-br from-white/40 via-white/20 to-transparent backdrop-blur-sm shadow-[inset_0_0_20px_rgba(255,255,255,0.5),0_10px_20px_rgba(0,0,0,0.1)] flex items-center justify-center transition-all duration-300 ${isPopping ? 'scale-150 opacity-0 duration-300' : 'animate-float-delayed hover:scale-105 hover:border-white/80 hover:shadow-[0_0_30px_rgba(255,255,255,0.6)]'}`}>
             
-            {/* Intense Shake Animation Container */}
-            <div className={`${!isPopping ? 'group-hover:animate-[shake_0.3s_ease-in-out_infinite]' : ''}`}>
-               <Logo size="xl" className={`filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.2)] transition-all ${isPopping ? 'brightness-200' : ''}`} />
+            {/* Glossy Reflections (Soap Bubble Effect) */}
+            <div className="absolute top-[15%] right-[15%] w-12 h-6 bg-white/80 rounded-full transform rotate-45 blur-[2px]"></div>
+            <div className="absolute bottom-[15%] left-[15%] w-4 h-4 bg-white/60 rounded-full blur-[1px]"></div>
+            {/* Iridescent ring hint */}
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-pink-300/30 border-b-blue-300/30 rotate-45 pointer-events-none"></div>
+            
+            {/* The Trapped Logo - Vibrating Intermittently */}
+            {/* MODIFIED ANIMATION: When popping, simply scale up and tilt slightly so we can see the smile */}
+            <div className={`transform transition-all duration-500 relative ${isPopping ? 'scale-125 rotate-6' : 'animate-shake-intermittent'}`}>
+              
+              {/* Pass 'sad' mood if trapped, 'happy' if released */}
+              <Logo 
+                size="xl" 
+                className="filter drop-shadow-2xl" 
+                mood={isPopping ? 'happy' : 'sad'} 
+              />
+              
+              {/* Speech Bubble - Only show when trapped */}
+              {!isPopping && (
+                <div className="absolute -top-8 -right-10 md:-right-12 bg-white text-momon-black font-brand text-sm md:text-lg px-4 py-2 rounded-xl border-2 border-momon-black shadow-hard animate-bounce z-20 whitespace-nowrap">
+                  ¡LIBÉRAME!
+                  <div className="absolute bottom-0 left-4 w-4 h-4 bg-white border-r-2 border-b-2 border-momon-black transform rotate-45 translate-y-2"></div>
+                </div>
+              )}
             </div>
-
-            {/* "Touch Me" Sticker */}
-            {!isPopping && (
-              <div className="absolute -top-10 -right-16 bg-white border-4 border-momon-black text-momon-black px-4 py-2 rounded-full font-brand transform rotate-12 animate-pulse shadow-hard-sm whitespace-nowrap">
-                ¡Libérame! ✨
-              </div>
-            )}
           </div>
-
-          {/* Text Feedback (Reward Message) */}
-          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-brand text-4xl md:text-5xl text-white text-stroke-black text-center w-[200%] pointer-events-none transition-all duration-300 ${isPopping ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}>
-            {message}
-          </div>
-
+          
+          {/* Pop Effect Particles */}
+          {isPopping && (
+             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="absolute w-full h-full border-4 border-white rounded-full animate-ping"></div>
+                <div className="absolute w-3/4 h-3/4 bg-white/50 rounded-full animate-ping delay-100"></div>
+             </div>
+          )}
         </div>
 
-        {/* Instruction */}
-        <p className={`mt-12 font-sans text-xl font-bold text-momon-black/70 uppercase tracking-widest transition-opacity duration-300 ${isPopping ? 'opacity-0' : 'opacity-100'}`}>
-          Haz click para liberar la magia
-        </p>
+        {/* Bottom Slogan - Magical & Stylized */}
+        <div className={`mt-12 transition-all duration-500 ${isPopping ? 'opacity-0 translate-y-10' : 'opacity-100'}`}>
+             <div className="relative inline-block">
+                <Sparkles className="absolute -top-6 -left-8 text-white animate-pulse" size={24} />
+                <Sparkles className="absolute -bottom-4 -right-8 text-momon-red animate-pulse delay-300" size={24} />
+                
+                <h2 className="font-brand text-3xl md:text-4xl uppercase tracking-widest drop-shadow-sm bg-clip-text text-transparent bg-gradient-to-r from-momon-black via-momon-red to-momon-black animate-gradient-x">
+                   ✨ Libera la Magia ✨
+                </h2>
+             </div>
+             {/* Magical Underline */}
+             <div className="h-1.5 w-32 mx-auto mt-4 rounded-full bg-gradient-to-r from-momon-yellow via-white to-momon-yellow shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
+        </div>
 
       </div>
-
+      
       <style>{`
-        @keyframes shake {
-          0%, 100% { transform: rotate(0deg); }
-          25% { transform: rotate(-5deg); }
-          75% { transform: rotate(5deg); }
+        .perspective-1000 {
+          perspective: 1000px;
+        }
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient-x {
+          background-size: 200% 200%;
+          animation: gradient-x 3s ease infinite;
         }
       `}</style>
     </div>

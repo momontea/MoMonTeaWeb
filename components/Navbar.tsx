@@ -1,15 +1,25 @@
-import React, { useState } from 'react';
-import { Menu, X, MapPin, ShoppingBag } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
+import { Menu, X, MapPin, ShoppingBag, Zap } from 'lucide-react';
 import { Logo } from './Logo';
 
 interface NavbarProps {
   onOpenCart: () => void;
   onJoinTribe: () => void;
   cartItemCount: number;
+  sparks: number; // Gamification Points
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenCart, onJoinTribe, cartItemCount }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenCart, onJoinTribe, cartItemCount, sparks }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [sparkBump, setSparkBump] = useState(false);
+
+  // Animate sparks when they change
+  useEffect(() => {
+    setSparkBump(true);
+    const timer = setTimeout(() => setSparkBump(false), 300);
+    return () => clearTimeout(timer);
+  }, [sparks]);
 
   const navLinks = [
     { name: 'Menú', href: '#menu' },
@@ -30,40 +40,48 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCart, onJoinTribe, cartIte
   };
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50 h-24 flex items-center font-sans border-b-4 border-momon-black">
+    <nav className="bg-white shadow-sm sticky top-0 z-50 h-24 flex items-center font-sans border-b-4 border-momon-black transition-all duration-300">
       <div className="container mx-auto px-4 flex justify-between items-center h-full">
         
         {/* Logo & Desktop Links */}
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4 md:gap-8">
           <a href="#" onClick={(e) => handleScroll(e, '#')} className="flex items-center gap-3 group">
              {/* Logo Component */}
             <div className="transition-transform group-hover:-rotate-6 group-hover:scale-110 duration-300">
               <Logo size="md" />
             </div>
-            <span className="font-brand font-bold text-3xl tracking-wide text-momon-black pt-2 hidden sm:block">
+            <span className="font-brand font-bold text-2xl md:text-3xl tracking-wide text-momon-black pt-2 hidden lg:block">
               MoMon Tea
             </span>
           </a>
 
-          <div className="hidden md:flex gap-8 font-bold text-sm tracking-wide uppercase text-momon-black ml-4">
+          <div className="hidden md:flex gap-6 lg:gap-8 font-bold text-sm tracking-wide uppercase text-momon-black ml-4">
             {navLinks.map((link) => (
               <a 
                 key={link.name} 
                 href={link.href} 
                 onClick={(e) => handleScroll(e, link.href)}
-                className="hover:text-momon-red transition-colors hover:-rotate-2 inline-block transform py-2"
+                className="hover:text-momon-red transition-colors hover:-rotate-2 inline-block transform py-2 relative group"
               >
                 {link.name}
+                <span className="absolute bottom-0 left-0 w-0 h-1 bg-momon-red transition-all duration-300 group-hover:w-full"></span>
               </a>
             ))}
           </div>
         </div>
 
         {/* Right Side Actions */}
-        <div className="flex items-center gap-4 md:gap-6">
-           {/* Mobile/Desktop Cart Trigger */}
+        <div className="flex items-center gap-3 md:gap-6">
+           
+           {/* GAMIFICATION: Sparks Counter */}
+           <div className={`flex items-center gap-1 bg-momon-black text-momon-yellow px-3 py-1 md:px-4 md:py-2 rounded-full border-2 border-momon-black shadow-hard-sm transition-transform duration-300 ${sparkBump ? 'scale-125' : 'scale-100'}`}>
+              <Zap size={16} className="fill-current" />
+              <span className="font-brand font-bold text-sm md:text-lg">{sparks}</span>
+           </div>
+
+           {/* Cart Trigger */}
            <button onClick={onOpenCart} className="relative p-2 hover:bg-gray-100 rounded-full transition-colors group">
-            <ShoppingBag size={28} className="text-momon-black group-hover:text-momon-red transition-colors" />
+            <ShoppingBag size={28} className="text-momon-black group-hover:text-momon-red transition-colors group-hover:rotate-6" />
             {cartItemCount > 0 && (
               <span className="absolute top-0 right-0 w-5 h-5 bg-momon-red text-white text-xs font-bold flex items-center justify-center rounded-full border-2 border-momon-black animate-bounce">
                 {cartItemCount}
@@ -71,14 +89,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCart, onJoinTribe, cartIte
             )}
           </button>
 
-          <a href="#" className="hidden md:flex items-center gap-2 hover:text-momon-red font-bold text-sm text-momon-black">
-            <MapPin size={20} className="text-momon-red" />
+          <a href="#" className="hidden lg:flex items-center gap-2 hover:text-momon-red font-bold text-sm text-momon-black">
+            <MapPin size={20} className="text-momon-red animate-bounce" />
             <span className="font-brand">Tiendas</span>
           </a>
+
           <div className="hidden md:flex gap-3">
             <button 
               onClick={onJoinTribe}
-              className="px-6 py-2 bg-momon-black text-momon-yellow border-2 border-momon-black rounded-full font-bold hover:bg-momon-red hover:text-white hover:border-momon-black text-sm transition-all shadow-[2px_2px_0px_#ffe115] active:translate-y-[2px] active:shadow-none font-brand uppercase tracking-wide"
+              className="px-6 py-2 bg-white text-momon-black border-2 border-momon-black rounded-full font-bold hover:bg-momon-red hover:text-white hover:border-momon-black text-sm transition-all shadow-[2px_2px_0px_#231f20] active:translate-y-[2px] active:shadow-none font-brand uppercase tracking-wide hover:scale-105"
             >
               Únete a la Tribu
             </button>
@@ -87,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCart, onJoinTribe, cartIte
 
         {/* Mobile Menu Button */}
         <div className="md:hidden">
-          <button onClick={() => setIsOpen(!isOpen)} className="text-momon-black p-2">
+          <button onClick={() => setIsOpen(!isOpen)} className="text-momon-black p-2 active:scale-90 transition-transform">
             {isOpen ? <X size={32} /> : <Menu size={32} />}
           </button>
         </div>
@@ -95,14 +114,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCart, onJoinTribe, cartIte
 
       {/* Mobile Dropdown */}
       {isOpen && (
-        <div className="absolute top-23 left-0 w-full bg-white shadow-xl md:hidden flex flex-col p-6 gap-6 border-t-4 border-momon-black border-b-4 h-auto z-50">
+        <div className="absolute top-24 left-0 w-full bg-white shadow-xl md:hidden flex flex-col p-6 gap-6 border-t-4 border-momon-black border-b-4 h-auto z-50 animate-slide-up">
           <div className="flex flex-col gap-6 text-2xl font-brand font-bold text-momon-black text-center">
             {navLinks.map((link) => (
               <a 
                 key={link.name} 
                 href={link.href} 
                 onClick={(e) => handleScroll(e, link.href)} 
-                className="hover:text-momon-red hover:bg-gray-50 py-2 rounded-lg"
+                className="hover:text-momon-red hover:bg-gray-50 py-2 rounded-lg active:scale-95 transition-transform"
               >
                 {link.name}
               </a>
